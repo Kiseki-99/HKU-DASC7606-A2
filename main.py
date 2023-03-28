@@ -71,7 +71,7 @@ def train(args, train_dataset, model, tokenizer):
     #     tb_writer = SummaryWriter()
 
     args.train_batch_size = args.per_gpu_train_batch_size * max(1, args.n_gpu)
-    train_sampler = "Write Your Code Here" if args.local_rank == -1 else DistributedSampler(train_dataset)
+    train_sampler = RandomSampler(train_dataset) if args.local_rank == -1 else DistributedSampler(train_dataset)
     train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=args.train_batch_size)
 
     if args.max_steps > 0:
@@ -86,7 +86,7 @@ def train(args, train_dataset, model, tokenizer):
         {'params': [p for n, p in model.named_parameters() if not any(nd in n for nd in no_decay)], 'weight_decay': args.weight_decay},
         {'params': [p for n, p in model.named_parameters() if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
         ]
-    optimizer = AdamW("Write Your Code Here", lr=args.learning_rate, eps=args.adam_epsilon)
+    optimizer = AdamW(optimizer_grouped_parameters, lr=args.learning_rate, eps=args.adam_epsilon)
     scheduler = WarmupLinearSchedule(optimizer, warmup_steps=args.warmup_steps, t_total=t_total)
     # if args.fp16:
     #     try:
@@ -143,13 +143,13 @@ def train(args, train_dataset, model, tokenizer):
             #         scaled_loss.backward()
             #     torch.nn.utils.clip_grad_norm_(amp.master_params(optimizer), args.max_grad_norm)
             # else:
-            "Write Your Code Here" (backpropagation)
-            torch.nn.utils.clip_grad_norm_("Write Your Code Here", args.max_grad_norm)
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
 
             tr_loss += loss.item()
             if (step + 1) % args.gradient_accumulation_steps == 0:
                 scheduler.step()  # Update learning rate schedule
-                "Write Your Code Here"
+                optimizer.step()
                 model.zero_grad()
                 global_step += 1
 
@@ -194,7 +194,7 @@ def evaluate(args, model, tokenizer, prefix=""):
 
     args.eval_batch_size = args.per_gpu_eval_batch_size * max(1, args.n_gpu)
     # Note that DistributedSampler samples randomly
-    eval_sampler = "Write Your Code Here" if args.local_rank == -1 else DistributedSampler(dataset)
+    eval_sampler = SequentialSampler(dataset) if args.local_rank == -1 else DistributedSampler(dataset)
     eval_dataloader = DataLoader(dataset, sampler=eval_sampler, batch_size=args.eval_batch_size)
 
     # Eval!
@@ -205,7 +205,7 @@ def evaluate(args, model, tokenizer, prefix=""):
     for batch in tqdm(eval_dataloader, desc="Evaluating"):
         model.eval()
         batch = tuple(t.to(args.device) for t in batch)
-        with torch."Write Your Code Here":
+        with torch.no_grad():
             inputs = {'input_ids':      batch[0],
                       'attention_mask': batch[1],
                       'token_type_ids': batch[2]

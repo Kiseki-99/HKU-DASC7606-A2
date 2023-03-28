@@ -220,11 +220,11 @@ def convert_examples_to_features(examples, tokenizer, max_seq_length,
         orig_to_tok_index = [] # orig_to_tok_index[i]: the index of the i-th token in the tokenized sequence
         all_doc_tokens = []
         for (i, token) in enumerate(example.doc_tokens):
-            orig_to_tok_index.append("Write Your Code Here")
+            orig_to_tok_index.append(len(all_doc_tokens))
             sub_tokens = tokenizer.tokenize(token)
             for sub_token in sub_tokens:
-                tok_to_orig_index.append("Write Your Code Here")
-                all_doc_tokens.append("Write Your Code Here")
+                tok_to_orig_index.append(i)
+                all_doc_tokens.append(sub_token)
 
 
         tok_start_position = None
@@ -233,9 +233,9 @@ def convert_examples_to_features(examples, tokenizer, max_seq_length,
             tok_start_position = -1
             tok_end_position = -1
         if is_training and not example.is_impossible:
-            tok_start_position = orig_to_tok_index["Write Your Code Here"]
+            tok_start_position = orig_to_tok_index[example.start_position]
             if example.end_position < len(example.doc_tokens) - 1:
-                tok_end_position = orig_to_tok_index["Write Your Code Here"] - 1
+                tok_end_position = orig_to_tok_index[example.end_position + 1] - 1
             else:
                 tok_end_position = len(all_doc_tokens) - 1
             (tok_start_position, tok_end_position) = _improve_answer_span(

@@ -33,6 +33,8 @@ from tqdm import tqdm, trange
 
 from pytorch_transformers import (WEIGHTS_NAME, BertConfig, BertTokenizer)
 
+from transformers import (RobertaConfig, RobertaForQuestionAnswering, RobertaTokenizer)
+
 from pytorch_transformers import AdamW, WarmupLinearSchedule
 
 
@@ -53,6 +55,7 @@ ALL_MODELS = sum((tuple(conf.pretrained_config_archive_map.keys()) \
 
 MODEL_CLASSES = {
     'bert': (BertConfig, BertForQuestionAnswering, BertTokenizer),
+    'roberta': (RobertaConfig, RobertaForQuestionAnswering, RobertaTokenizer)
 }
 
 def set_seed(args):
